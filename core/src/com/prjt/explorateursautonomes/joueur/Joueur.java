@@ -1,10 +1,11 @@
 package com.prjt.explorateursautonomes.joueur;
 
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
+import com.prjt.explorateursautonomes.algo.Node;
 import com.prjt.explorateursautonomes.monstre.Monstre;
-import com.prjt.explorateursautonomes.world.GameMap;
+
+import java.util.List;
 
 
 public class Joueur {
@@ -94,30 +95,56 @@ public class Joueur {
     }
 
     // Méthode pour démarrer le mouvement autonome
-    public void updatePosition() {
-        // Simulate autonomous movement
-        x += speed;
-        y += speed;
+    public void movePlayerAlongPath(List<Node> path) {
+        while (!path.isEmpty()) {
+            Node nextNode = path.get(0);
+            float dx = nextNode.getX() - this.getX();
+            float dy = nextNode.getY() - this.getY();
+            float angle = MathUtils.atan2(dy, dx);
+            float moveX = this.getSpeed() * MathUtils.cos(angle);
+            float moveY = this.getSpeed() * MathUtils.sin(angle);
+            this.setX(this.getX() + moveX);
+            this.setY(this.getY() + moveY);
 
-        float mapWidth = 950;
-        float mapHeight = 950;
-        float playerWidth = 50;
-        float playerHeight = 50;
-
-        // ne pas depasser la limite de la map
-        x = MathUtils.clamp(x, 0, mapWidth - playerWidth);
-        y = MathUtils.clamp(y, 0, mapHeight - playerHeight);
+            if (Math.abs(this.getX() - nextNode.getX()) < this.getSpeed() &&
+                    Math.abs(this.getY() - nextNode.getY()) < this.getSpeed()) {
+                path.remove(0);
+            } else {
+                break; // Sortir de la boucle si le joueur n'est pas encore arrivé au prochain nœud
+            }
+        }
     }
 
     //check si il a eu une collision avec un mur
-    public boolean isCollision(TiledMapTileLayer obstacleLayer, float x, float y) {
-        int cellX = (int) (x / obstacleLayer.getTileWidth());
-        int cellY = (int) (y / obstacleLayer.getTileHeight());
+    public boolean isCollisionHD(TiledMapTileLayer obstacleLayer, float x, float y) {
+        int cellX = (int) ((x + 15) / obstacleLayer.getTileWidth());
+        int cellY = (int) ((y + 15) / obstacleLayer.getTileHeight());
 
         TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
         return cell != null && cell.getTile() != null;
     }
 
+    public boolean isCollisionHG(TiledMapTileLayer obstacleLayer, float x, float y) {
+        int cellX = (int) ((x ) / obstacleLayer.getTileWidth());
+        int cellY = (int) ((y + 15) / obstacleLayer.getTileHeight());
+
+        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
+        return cell != null && cell.getTile() != null;
+    }
+    public boolean isCollisionBD(TiledMapTileLayer obstacleLayer, float x, float y) {
+        int cellX = (int) ((x + 15) / obstacleLayer.getTileWidth());
+        int cellY = (int) ((y ) / obstacleLayer.getTileHeight());
+
+        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
+        return cell != null && cell.getTile() != null;
+    }
+    public boolean isCollisionBG(TiledMapTileLayer obstacleLayer, float x, float y) {
+        int cellX = (int) ((x ) / obstacleLayer.getTileWidth());
+        int cellY = (int) ((y ) / obstacleLayer.getTileHeight());
+
+        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
+        return cell != null && cell.getTile() != null;
+    }
     //revenir a lancienne case en case de collisions
     public void handleCollisionWithObstacle(TiledMapTileLayer obstacleLayer) {
         x = prevX;
@@ -130,5 +157,8 @@ public class Joueur {
         prevY = y;
     }
 
+    public boolean isCollision(TiledMapTileLayer obstacleLayer) {
+        return isCollisionHG(obstacleLayer, x + speed, y + speed) || isCollisionHD(obstacleLayer, x + speed, y + speed) || isCollisionBD(obstacleLayer, x + speed, y + speed) || isCollisionBG(obstacleLayer, x + speed, y + speed) ;
+    }
 }
 
