@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.prjt.explorateursautonomes.algo.Node;
 import com.prjt.explorateursautonomes.monstre.Monstre;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -20,6 +21,8 @@ public class Joueur {
     private float x;
     private float y;
     private float speed;
+    private List<Node> path;
+    private PlayerState state;
 
     // Constructeur
     public Joueur(int pointsDeVie, int degats, double rangeDetection, float x, float y, float speed) {
@@ -29,6 +32,8 @@ public class Joueur {
         this.x = x;
         this.y = y;
         this.speed = speed;
+        this.path = new ArrayList<>();
+        this.state = PlayerState.FINDING_TREASURE;
     }
 
     // Méthode pour attaquer un monstre
@@ -95,7 +100,7 @@ public class Joueur {
     }
 
     // Méthode pour démarrer le mouvement autonome
-    public void movePlayerAlongPath(List<Node> path) {
+    public void movePlayerinThePath(List<Node> path) {
         while (!path.isEmpty()) {
             Node nextNode = path.get(0);
             float dx = nextNode.getX() - this.getX();
@@ -159,6 +164,22 @@ public class Joueur {
 
     public boolean isCollision(TiledMapTileLayer obstacleLayer) {
         return isCollisionHG(obstacleLayer, x + speed, y + speed) || isCollisionHD(obstacleLayer, x + speed, y + speed) || isCollisionBD(obstacleLayer, x + speed, y + speed) || isCollisionBG(obstacleLayer, x + speed, y + speed) ;
+    }
+
+    public void setPath(List<Node> path) {
+        this.path = path;
+    }
+
+    public List<Node> getPath() {
+        return path;
+    }
+
+    public PlayerState getState() {
+        return state;
+    }
+
+    public void setState(PlayerState state) {
+        this.state = state;
     }
 }
 

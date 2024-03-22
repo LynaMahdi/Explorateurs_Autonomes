@@ -3,16 +3,15 @@ package com.prjt.explorateursautonomes;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
-import com.prjt.explorateursautonomes.algo.Graph;
 import com.prjt.explorateursautonomes.algo.Node;
-import com.prjt.explorateursautonomes.algo.Pathfinding;
 import com.prjt.explorateursautonomes.joueur.Joueur;
+import com.prjt.explorateursautonomes.joueur.JoueurThread;
 import com.prjt.explorateursautonomes.tresor.Tresor;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ public class Explorateurs extends ApplicationAdapter {
 	Texture img; //image of the explorateur
 	Texture[] tresorImages;  //images des tresors
 
-	private static ArrayList<Joueur> listOfPlayers = new ArrayList<Joueur>();
+	private final ArrayList<Joueur> listOfPlayers = new ArrayList<Joueur>();
 
 	TiledMap tiledMap;
 	OrthogonalTiledMapRenderer tmr;
@@ -35,9 +34,13 @@ public class Explorateurs extends ApplicationAdapter {
 
 	OrthographicCamera camera = new OrthographicCamera();
 	Joueur joueur1,joueur2,joueur3,joueur4;
-	private Graph graph;
+
+	JoueurThread joueurThread;
 	Tresor[] tresor; // Array of treasures
-	List<Node> path;
+	List<Node> path,path1,path2,path3;
+	BitmapFont font; // Ajout de la police de caractères
+
+
 	public void create() {
 		batch = new SpriteBatch();
 
@@ -48,7 +51,6 @@ public class Explorateurs extends ApplicationAdapter {
 
 		// Initialize the texture for the player
 		img = new Texture("crab_rest.png");
-
 		// Initialize the texture for the treasurs
 		tresorImages = new Texture[4];
 		tresorImages[0] = new Texture("tresors/tresor_amethyst.png");
@@ -57,7 +59,7 @@ public class Explorateurs extends ApplicationAdapter {
 		tresorImages[3] = new Texture("tresors/tresor_ruby.png");
 
 		// Initialize the players instances
-		joueur1 = new Joueur(100, 10, 5, 256, 224, 1);
+		joueur1 = new Joueur(100, 10, 5, 8 * 16, 320 - 16, 1);
 		joueur2 = new Joueur(100, 10, 5, 896, 384, 1);
 		joueur3 = new Joueur(100, 10, 5, 144, 672, 1);
 		joueur4 = new Joueur(100, 10, 5, 784, 768, 1);
@@ -66,26 +68,17 @@ public class Explorateurs extends ApplicationAdapter {
 
 
 		// Generate 5 treasures
-		generateTreasures(5);
+		generateTreasures();
 
-		TiledMapTileLayer[] obstacleLayers = {
-				(TiledMapTileLayer) tiledMap.getLayers().get("obstacle"),
-				(TiledMapTileLayer) tiledMap.getLayers().get("mur supp2"),
-				(TiledMapTileLayer) tiledMap.getLayers().get("mur inférieur"),
-				(TiledMapTileLayer) tiledMap.getLayers().get("mur supérieur"),
-				(TiledMapTileLayer) tiledMap.getLayers().get("sol supp"),
-				(TiledMapTileLayer) tiledMap.getLayers().get("déco")
-		};
-		int TreasurPosX=tresor[0].getPositionX();
-		int TreasurPosY=tresor[0].getPositionY();
-		System.out.println(Pos(256,224, obstacleLayers));
-		this.graph = Pathfinding.buildGraph(tiledMap);
-		System.out.println(this.graph);
-		path = Pathfinding.AStar(graph, new Node(256, 224, false), new Node(256, 224, false));
-		System.out.println(path);
+		for (int i = 0; i < listOfPlayers.size(); i++) {
+			joueurThread = new JoueurThread(i, tresor, tiledMap, tresor[i], listOfPlayers.get(i));
+			joueurThread.start();
+		}
+
+
 	}
 
-	private void generateTreasures(int numberOfTreasures) {
+	private void generateTreasures() {
 		int labyrinthCount = 4; // Nombre de labyrinthes dans la carte
 		tresor = new Tresor[labyrinthCount]; // Initialiser le tableau de trésors
 
@@ -118,11 +111,7 @@ public class Explorateurs extends ApplicationAdapter {
 				// Convertir en multiples de 16
 				posX = (int) (Math.round(posX / 16.0f) * 16.0f);
 				posY = (int) (Math.round(posY / 16.0f) * 16.0f);
-			} while (!Pos(posX, posY, obstacleLayers)); // Vérifier si la position est valide
-
-			// Vérifier si la position générée est à l'intérieur du labyrinthe actuel
-			// Générer une valeur aléatoire pour le trésor
-			int valeur = MathUtils.random(1, 10); // Plage d'exemple: 1 à 10
+			} while (!Pos(posX, posY, obstacleLayers)); // Vérifier si la position est valide(pas dans un obstacle)
 
 			// Créer le trésor pour le labyrinthe actuel
 			tresor[i] = new Tresor("addon", posX, posY, i);
@@ -131,8 +120,7 @@ public class Explorateurs extends ApplicationAdapter {
 	}
 
 
-
-	//cheker si la position du tresor est valide
+	//checker si la position du tresor est valide
 	private boolean Pos(int x, int y, TiledMapTileLayer[] obstacleLayers) {
 		for (TiledMapTileLayer obstacleLayer : obstacleLayers) {
 			// Check if the position is not on an obstacle in any of the layers
@@ -150,20 +138,20 @@ public class Explorateurs extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-
+		//update();
 		// les collisions avec les murs
 		boolean wallCollision = checkCollisionWithObstacleLayer("mur supp2");
 		boolean obstacleCollision = checkCollisionWithObstacleLayer("obstacle");
 		boolean downWallCollision = checkCollisionWithObstacleLayer("mur inférieur");
 		boolean upWallCollision = checkCollisionWithObstacleLayer("mur supérieur");
 
-		//joueur.updatePreviousPosition();
 
 		//System.out.println("wall " + wallCollision + " obstacle " + obstacleCollision + downWallCollision);
 
-		joueur1.movePlayerAlongPath(path);
+		for (Joueur joueur : listOfPlayers) {
+			joueur.movePlayerinThePath(joueur.getPath());
+		}
 
-		// Add more layers as needed
 
 		// Move the camera to follow the player
 		camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
@@ -175,11 +163,18 @@ public class Explorateurs extends ApplicationAdapter {
 		// Render the player
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
+
+		for (Joueur joueur : listOfPlayers) {
+			// Dessiner le joueur à sa position actuelle sur la carte
+			batch.draw(img, joueur.getX(), joueur.getY());
+		}
 		batch.draw(img, joueur1.getX(), joueur1.getY());
 		for (Tresor t : tresor) {
 			Texture tresorTexture = tresorImages[t.getValeur()]; // Obtenir l'image  du trésor
 			batch.draw(tresorTexture, t.getPositionX(), t.getPositionY());
 		}
+		//font.draw(batch, "Votre texte ici", 100, 100); // Modifier les coordonnées selon votre besoin
+
 		batch.end();
 	}
 
@@ -196,10 +191,33 @@ public class Explorateurs extends ApplicationAdapter {
 		 */
 	}
 
+	/*public void update() {
+		while (true) {
+			try {
+				Thread.sleep(100); // sleep en millisecondes
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
+			// Mettre à jour le mouvement des joueurs
+			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(0).getX(), (int) listOfPlayers.get(0).getY(), false), new Node(400, 336, false));
+			listOfPlayers.get(0).movePlayerinThePath(path);
+			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(1).getX(), (int) listOfPlayers.get(1).getY(), false), new Node(768, 368, false));
+			listOfPlayers.get(1).movePlayerinThePath(path);
+			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(2).getX(), (int) listOfPlayers.get(2).getY(), false), new Node(352, 672, false));
+			listOfPlayers.get(2).movePlayerinThePath(path);
+			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(3).getX(), (int) listOfPlayers.get(3).getY(), false), new Node(592, 816, false));
+			listOfPlayers.get(3).movePlayerinThePath(path);
+
+		}
+	}*/
 
 	@Override
 	public void dispose() {
+
+		/*if (joueurThread != null) {
+			joueurThread.interrupt(); // Interruption du thread
+		}*/
 		batch.dispose();
 		tiledMap.dispose();
 		tmr.dispose();

@@ -6,16 +6,14 @@ public class Node {
 
     private final int x, y;
     private float gCost, hCost, fCost;
-    private final boolean solid;
     private Node parent;
 
-    public Node(int x, int y, boolean solid) {
+    public Node(int x, int y) {
         this.x = x;
         this.y = y;
         this.gCost = -1;
         this.hCost = -1;
         this.fCost = -1;
-        this.solid = solid;
         this.parent = null;
     }
 
@@ -25,10 +23,6 @@ public class Node {
 
     public int getY() {
         return y;
-    }
-
-    public boolean isSolid() {
-        return solid;
     }
 
     public Node getParent() {
@@ -85,7 +79,6 @@ public class Node {
         return "Node{" +
                 "x=" + x +
                 ", y=" + y +
-                ", solid=" + solid +
                 '}';
     }
 }
