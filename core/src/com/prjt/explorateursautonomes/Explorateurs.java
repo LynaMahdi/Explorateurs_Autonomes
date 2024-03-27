@@ -1,10 +1,12 @@
 package com.prjt.explorateursautonomes;
 
-import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -12,53 +14,57 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.prjt.explorateursautonomes.algo.Node;
 import com.prjt.explorateursautonomes.joueur.Joueur;
 import com.prjt.explorateursautonomes.joueur.JoueurThread;
+import com.prjt.explorateursautonomes.monstre.Monstre;
 import com.prjt.explorateursautonomes.tresor.Tresor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-
-public class Explorateurs extends ApplicationAdapter {
-
-	SpriteBatch batch;
-	Texture img; //image of the explorateur
-	Texture[] tresorImages;  //images des tresors
-
+public class Explorateurs implements Screen {
+	private SpriteBatch batch;
+	private Texture img, imgMonstre; // Image de l'explorateur
+	private Texture[] tresorImages; // Images des trésors
 	private final ArrayList<Joueur> listOfPlayers = new ArrayList<Joueur>();
+	private final ArrayList<Monstre> listOfMonsters = new ArrayList<Monstre>();
+	private Monstre[] monstre;
 
-	TiledMap tiledMap;
-	OrthogonalTiledMapRenderer tmr;
-
-	TiledMapTileLayer collisionLayer;
-
-	OrthographicCamera camera = new OrthographicCamera();
-	Joueur joueur1,joueur2,joueur3,joueur4;
-
-	JoueurThread joueurThread;
-	Tresor[] tresor; // Array of treasures
-	List<Node> path,path1,path2,path3;
-	BitmapFont font; // Ajout de la police de caractères
+	private ShapeRenderer shapeRenderer;
+	private TiledMap tiledMap;
+	private OrthogonalTiledMapRenderer tmr;
+	private Tresor[] tresor; // Tableau des trésors
 
 
-	public void create() {
+	private OrthographicCamera camera = new OrthographicCamera();
+	private ThreadPoolExecutor pathThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+	private Joueur joueur1, joueur2, joueur3, joueur4;
+	private List<Node> path, path1, path2, path3;
+	BitmapFont bitmapFont;
+	private Texture blankTexture,texture,texture2; // Déclaration de la texture blankTexture
+
+
+	@Override
+	public void show() {
 		batch = new SpriteBatch();
 
-		// Initialize your TiledMap
+		// Initialisez votre carte TiledMap
 		tiledMap = new TmxMapLoader().load("map.tmx");
 		tmr = new OrthogonalTiledMapRenderer(tiledMap);
 		camera.setToOrtho(false, 950, 950);
 
-		// Initialize the texture for the player
+		// Initialisez la texture pour le joueur
 		img = new Texture("crab_rest.png");
-		// Initialize the texture for the treasurs
+		imgMonstre=new Texture("squelette_rest.png");
+		// Initialisez la texture pour les trésors
 		tresorImages = new Texture[4];
 		tresorImages[0] = new Texture("tresors/tresor_amethyst.png");
 		tresorImages[1] = new Texture("tresors/tresor_diamond.png");
 		tresorImages[2] = new Texture("tresors/tresor_emerald.png");
 		tresorImages[3] = new Texture("tresors/tresor_ruby.png");
 
-		// Initialize the players instances
+		// Initialisez les instances des joueurs
 		joueur1 = new Joueur(100, 10, 5, 8 * 16, 320 - 16, 1);
 		joueur2 = new Joueur(100, 10, 5, 896, 384, 1);
 		joueur3 = new Joueur(100, 10, 5, 144, 672, 1);
@@ -67,21 +73,45 @@ public class Explorateurs extends ApplicationAdapter {
 		listOfPlayers.add(joueur1);listOfPlayers.add(joueur2);listOfPlayers.add(joueur3);listOfPlayers.add(joueur4);
 
 
-		// Generate 5 treasures
-		generateTreasures();
+		// Initialisez les instances des monstres
 
+
+		// Générez 4 trésors et monstres
+		generateTreasures();
+		generateMonsters();
+
+		tresor[0].setPositionX(240 - 32);
+		tresor[0].setPositionY(128 - 16);
+
+		// Lancez le thread pour chaque joueur
 		for (int i = 0; i < listOfPlayers.size(); i++) {
-			joueurThread = new JoueurThread(i, tresor, tiledMap, tresor[i], listOfPlayers.get(i));
+			JoueurThread joueurThread = new JoueurThread(i, this, tresor, tiledMap, tresor[i], listOfPlayers.get(i), monstre,monstre[i]);
 			joueurThread.start();
+
 		}
 
 
 	}
 
+	private void generateMonsters() {
+		monstre = new Monstre[tresor.length];
+
+		for (int i = 0; i < tresor.length; i++) {
+			// Obtenez la position du trésor
+			int tresorX = tresor[i].getPositionX();
+			int tresorY = tresor[i].getPositionY();
+
+			// Générez la position aléatoire à côté du trésor
+			int monsterX = tresorX + 16;
+			int monsterY = tresorY + 16;
+
+			// Créez le monstre à cette position
+			monstre[i] = new Monstre(monsterX, monsterY,  100, 10, 5, 8, 5);		}
+	}
+
 	private void generateTreasures() {
 		int labyrinthCount = 4; // Nombre de labyrinthes dans la carte
 		tresor = new Tresor[labyrinthCount]; // Initialiser le tableau de trésors
-
 		Random random = new Random();
 
 		// Tableau des couches d'obstacles
@@ -99,7 +129,7 @@ public class Explorateurs extends ApplicationAdapter {
 				{5, 440, 5, 450},   // Labyrinthe 1
 				{450, 950, 5, 450}, // Labyrinthe 2
 				{5, 420, 480, 950}, // Labyrinthe 3
-				{450, 950, 480, 950} // Labyrinthe 4
+				{450, 950, 480,950} // Labyrinthe 4
 		};
 
 		for (int i = 0; i < labyrinthCount; i++) {
@@ -115,112 +145,118 @@ public class Explorateurs extends ApplicationAdapter {
 
 			// Créer le trésor pour le labyrinthe actuel
 			tresor[i] = new Tresor("addon", posX, posY, i);
-			System.out.println("x= " + tresor[i].getPositionX() + "y="+tresor[i].getPositionY() +"valeur= "+ tresor[i].getValeur());
+		System.out.println("x= " + tresor[i].getPositionX() + "y=" + tresor[i].getPositionY() + "valeur= " + tresor[i].getValeur());
 		}
 	}
 
-
-	//checker si la position du tresor est valide
+	// Checker si la position du trésor est valide
 	private boolean Pos(int x, int y, TiledMapTileLayer[] obstacleLayers) {
 		for (TiledMapTileLayer obstacleLayer : obstacleLayers) {
-			// Check if the position is not on an obstacle in any of the layers
+			// Vérifier si la position n'est pas sur un obstacle dans l'une des couches
 			TiledMapTileLayer.Cell cell = obstacleLayer.getCell(x / obstacleLayer.getTileWidth(), y / obstacleLayer.getTileHeight());
 			if (cell != null && cell.getTile() != null) {
-				return false; // obstacle trouvé
+				return false; // Obstacle trouvé
 			}
-
 		}
-
-		return true; // pas d'obstacle
+		return true; // Pas d'obstacle
 	}
 
-
-
 	@Override
-	public void render() {
-		//update();
-		// les collisions avec les murs
-		boolean wallCollision = checkCollisionWithObstacleLayer("mur supp2");
-		boolean obstacleCollision = checkCollisionWithObstacleLayer("obstacle");
-		boolean downWallCollision = checkCollisionWithObstacleLayer("mur inférieur");
-		boolean upWallCollision = checkCollisionWithObstacleLayer("mur supérieur");
+	public void render(float delta) {
 
+        //deplacer les 04 joueurs
+		for (int i = 0; i < listOfPlayers.size(); i++) {
+			listOfPlayers.get(i).movePlayerinThePath(listOfPlayers.get(i).getPath()/*,monstre[i]*/);
 
-		//System.out.println("wall " + wallCollision + " obstacle " + obstacleCollision + downWallCollision);
-
-		for (Joueur joueur : listOfPlayers) {
-			joueur.movePlayerinThePath(joueur.getPath());
 		}
 
-
-		// Move the camera to follow the player
+		// Déplacer la caméra pour suivre le joueur
 		camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
 		camera.update();
-		// Render the Tiled map
+
+		// Rendu de la carte Tiled
 		tmr.setView(camera);
 		tmr.render();
+		BitmapFont bitmapFont = new BitmapFont(Gdx.files.internal("font.fnt"));
 
-		// Render the player
+		// Rendu des joueurs
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-		for (Joueur joueur : listOfPlayers) {
-			// Dessiner le joueur à sa position actuelle sur la carte
+
+		//afficher les joueurs
+		for (int i = 0; i < listOfPlayers.size(); i++) {
+			Joueur joueur = listOfPlayers.get(i);
+			Tresor t = tresor[i];
+			double distance = Math.abs(joueur.getX() - t.getPositionX())+Math.abs(joueur.getY() - t.getPositionY());
+
 			batch.draw(img, joueur.getX(), joueur.getY());
+			bitmapFont.draw(batch, "X : " + joueur.getX() + " Y " + joueur.getY() + "D : " + distance , joueur.getX(), joueur.getY());
 		}
-		batch.draw(img, joueur1.getX(), joueur1.getY());
+
+		//afficher les tresors
 		for (Tresor t : tresor) {
-			Texture tresorTexture = tresorImages[t.getValeur()]; // Obtenir l'image  du trésor
+			Texture tresorTexture = tresorImages[t.getValeur()]; // Obtenir l'image du trésor
 			batch.draw(tresorTexture, t.getPositionX(), t.getPositionY());
 		}
-		//font.draw(batch, "Votre texte ici", 100, 100); // Modifier les coordonnées selon votre besoin
+
+		//afficher les monstres
+
+		for (Monstre m : monstre) {
+			batch.draw(imgMonstre, m.getPositionX(), m.getPositionY());
+		}
+
+		//afficher le nombre de tresors récoltés pour chaque joueur
+		bitmapFont.draw(batch,"+ " + joueur2.getTresorsRecoltes(), joueur2.getX(), joueur2.getY());
+		bitmapFont.draw(batch, "+ " +joueur1.getTresorsRecoltes(), joueur1.getX(), joueur1.getY());
+		bitmapFont.draw(batch, "+ " +joueur3.getTresorsRecoltes(), joueur3.getX(), joueur3.getY());
+		bitmapFont.draw(batch, "+ " +joueur4.getTresorsRecoltes(), joueur4.getX(), joueur4.getY());
+
+
 
 		batch.end();
 	}
 
 
-	//cheker les collision avec les murs
-	private boolean checkCollisionWithObstacleLayer(String layerName) {
-		TiledMapTileLayer obstacleLayer = (TiledMapTileLayer) tiledMap.getLayers().get(layerName);
-		return joueur1.isCollision(obstacleLayer);
-		/*
-		if (joueur.isCollision(obstacleLayer, joueur.getX()+joueur.getSpeed(), joueur.getY()+joueur.getSpeed())) {
-			joueur.handleCollisionWithObstacle(obstacleLayer);
-		}
-
-		 */
+	@Override
+	public void resize(int width, int height) {
+		// Mettez à jour la taille de la vue de la caméra lorsque la fenêtre est redimensionnée
+		camera.viewportWidth = 950;
+		camera.viewportHeight = 950;
+		camera.update();
 	}
 
-	/*public void update() {
-		while (true) {
-			try {
-				Thread.sleep(100); // sleep en millisecondes
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+	@Override
+	public void pause() {
+	}
 
-			// Mettre à jour le mouvement des joueurs
-			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(0).getX(), (int) listOfPlayers.get(0).getY(), false), new Node(400, 336, false));
-			listOfPlayers.get(0).movePlayerinThePath(path);
-			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(1).getX(), (int) listOfPlayers.get(1).getY(), false), new Node(768, 368, false));
-			listOfPlayers.get(1).movePlayerinThePath(path);
-			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(2).getX(), (int) listOfPlayers.get(2).getY(), false), new Node(352, 672, false));
-			listOfPlayers.get(2).movePlayerinThePath(path);
-			path = Pathfinding.AStar(graph, new Node((int) listOfPlayers.get(3).getX(), (int) listOfPlayers.get(3).getY(), false), new Node(592, 816, false));
-			listOfPlayers.get(3).movePlayerinThePath(path);
+	@Override
+	public void resume() {
+	}
 
-		}
-	}*/
+	@Override
+	public void hide() {
+
+	}
 
 	@Override
 	public void dispose() {
-
-		/*if (joueurThread != null) {
-			joueurThread.interrupt(); // Interruption du thread
-		}*/
+		// Libérez les ressources utilisées par l'écran
 		batch.dispose();
 		tiledMap.dispose();
 		tmr.dispose();
 		img.dispose();
+	}
+
+	public Tresor[] getTresor() {
+		return tresor;
+	}
+
+	public ThreadPoolExecutor getPathThreadPool() {
+		return pathThreadPool;
+	}
+
+	public Monstre[] getMonstre() {
+		return monstre;
 	}
 }
