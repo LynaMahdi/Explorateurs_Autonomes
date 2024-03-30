@@ -126,7 +126,7 @@ public class Joueur {
     // Fonction pour lancer le combat entre le joueur et un monstre
     public boolean lancerCombat(Monstre monstre) {
         // Tant que le joueur et le monstre sont en vie
-        while (this.getPointsDeVie() > 0 && monstre.getPointsDeVie() > 0) {
+        if (this.getPointsDeVie() > 0 && monstre.getPointsDeVie() > 0) {
             // Calculer les dégâts infligés par le joueur au monstre
             int degatsDuJoueur = this.getDegats() - monstre.getArmor();
             // Vérifier si les dégâts sont positifs
@@ -138,7 +138,8 @@ public class Joueur {
             // Vérifier si le monstre est toujours en vie après l'attaque du joueur
             if (monstre.getPointsDeVie() > 0) {
                 // Calculer les dégâts infligés par le monstre au joueur
-                int degatsDuMonstre = monstre.getDegats() - 10; // À CHANGERRR!!!!
+                int degatsDuMonstre = monstre.getDegats() ; // À CHANGERRR!!!!
+                System.out.println("les degats du monstre "+degatsDuMonstre);
                 // Vérifier si les dégâts sont positifs
                 if (degatsDuMonstre > 0) {
                     // Infliger des dégâts au joueur
@@ -146,6 +147,7 @@ public class Joueur {
                 }
             }
         }
+        System.out.println("ma vie "+this.getPointsDeVie()+ " la vie du monstre "+monstre.getPointsDeVie());
         if(this.getPointsDeVie()<0){
             //faire disparaitre le joueur
         }
@@ -169,14 +171,6 @@ public class Joueur {
             float moveY = this.getSpeed() * MathUtils.sin(angle);
             this.setX(this.getX() + moveX);
             this.setY(this.getY() + moveY);
-            /*detecterProximite(monstre);
-            if (PlayerState.COMBATTING==this.getState()){
-               // this.lancerCombat(monstre);
-              //  System.out.println("I'm combating");
-
-                System.out.println("je suis le player "+this+" mon state est "+this.getState() );
-                break;
-            }*/
 
             if (Math.abs(this.getX() - nextNode.getX()) < this.getSpeed() &&
                     Math.abs(this.getY() - nextNode.getY()) < this.getSpeed()) {

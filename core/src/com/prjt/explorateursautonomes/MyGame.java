@@ -2,11 +2,9 @@ package com.prjt.explorateursautonomes;
 
 
 import com.badlogic.gdx.Game;
-import com.prjt.explorateursautonomes.joueur.Joueur;
 
 public class MyGame extends Game {
     public static MyGame ref = null;
-    Joueur car1,car2;
     TitleScreen screen;
 
     public MyGame() {

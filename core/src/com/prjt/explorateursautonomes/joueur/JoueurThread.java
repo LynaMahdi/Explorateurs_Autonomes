@@ -45,7 +45,6 @@ public class JoueurThread extends Thread {
 
         long lastTime = System.currentTimeMillis();
         long timer = 0;
-       // detecterProximite();
         while (true) {
 
             long currentTime = System.currentTimeMillis();
@@ -70,7 +69,12 @@ public class JoueurThread extends Thread {
                 joueur.detecterProximite(m);
                 if (joueur.getState() == PlayerState.COMBATTING) {
                     System.out.println("Le joueur " + id + " a lancé un combat avec un monstre !");
-                    joueur.lancerCombat(m);
+                    if(joueur.lancerCombat(m)){
+                        System.out.println("je contine");
+                        joueur.setState(PlayerState.FINDING_TREASURE);
+                    }else{
+                        System.out.println("jpp");
+                    }
                 }
             }
 

@@ -65,10 +65,10 @@ public class Explorateurs implements Screen {
 		tresorImages[3] = new Texture("tresors/tresor_ruby.png");
 
 		// Initialisez les instances des joueurs
-		joueur1 = new Joueur(100, 10, 5, 8 * 16, 320 - 16, 1);
-		joueur2 = new Joueur(100, 10, 5, 896, 384, 1);
-		joueur3 = new Joueur(100, 10, 5, 144, 672, 1);
-		joueur4 = new Joueur(100, 10, 5, 784, 768, 1);
+		joueur1 = new Joueur(20, 10, 5, 8 * 16, 320 - 16, 1);
+		joueur2 = new Joueur(20, 10, 5, 896, 384, 1);
+		joueur3 = new Joueur(20, 10, 5, 144, 672, 1);
+		joueur4 = new Joueur(20, 10, 5, 784, 768, 1);
 
 		listOfPlayers.add(joueur1);listOfPlayers.add(joueur2);listOfPlayers.add(joueur3);listOfPlayers.add(joueur4);
 
@@ -145,7 +145,7 @@ public class Explorateurs implements Screen {
 
 			// Créer le trésor pour le labyrinthe actuel
 			tresor[i] = new Tresor("addon", posX, posY, i);
-		System.out.println("x= " + tresor[i].getPositionX() + "y=" + tresor[i].getPositionY() + "valeur= " + tresor[i].getValeur());
+		//System.out.println("x= " + tresor[i].getPositionX() + "y=" + tresor[i].getPositionY() + "valeur= " + tresor[i].getValeur());
 		}
 	}
 
@@ -188,10 +188,8 @@ public class Explorateurs implements Screen {
 		for (int i = 0; i < listOfPlayers.size(); i++) {
 			Joueur joueur = listOfPlayers.get(i);
 			Tresor t = tresor[i];
-			double distance = Math.abs(joueur.getX() - t.getPositionX())+Math.abs(joueur.getY() - t.getPositionY());
 
 			batch.draw(img, joueur.getX(), joueur.getY());
-			bitmapFont.draw(batch, "X : " + joueur.getX() + " Y " + joueur.getY() + "D : " + distance , joueur.getX(), joueur.getY());
 		}
 
 		//afficher les tresors
