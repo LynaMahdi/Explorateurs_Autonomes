@@ -105,7 +105,7 @@ public class SecondScreen implements Screen {
                     selectedStrategy = "Greed";
                 }
             }
-        } else {
+        }else {
             // Afficher les boutons de nombre en fonction de la stratégie choisie
             if (selectedStrategy.equals("Greed")) {
                 button2.draw(batch);
@@ -121,16 +121,26 @@ public class SecondScreen implements Screen {
                         numberOfPlayers = 4;
                     }
                     ((Game) Gdx.app.getApplicationListener()).setScreen(new Explorateurs(numberOfPlayers));
-
-                } else if (selectedStrategy.equals("Safe")) {
-                    button2.draw(batch);
-                    button3.draw(batch);
-                    button4.draw(batch);
-                    //((Game) Gdx.app.getApplicationListener()).setScreen(new Explorateurs());
+                }
+            } else if (selectedStrategy.equals("Safe")) {
+                button2.draw(batch);
+                button3.draw(batch);
+                button4.draw(batch);
+                if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                    if (button2.isWithin(Gdx.input.getX(), Gdx.input.getY())) {
+                        numberOfPlayers = 2;
+                    } else if (button3.isWithin(Gdx.input.getX(), Gdx.input.getY())) {
+                        numberOfPlayers = 3;
+                    } else if (button4.isWithin(Gdx.input.getX(), Gdx.input.getY())) {
+                        numberOfPlayers = 4;
+                    }
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new ExplorateursSafe(numberOfPlayers));
                 }
             }
 
         }
+
+
         batch.end();
 
     }
