@@ -1,6 +1,6 @@
 package com.prjt.explorateursautonomes.joueur;
 
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.prjt.explorateursautonomes.algo.Node;
 import com.prjt.explorateursautonomes.monstre.Monstre;
@@ -13,8 +13,10 @@ public class Joueur {
 
     // Attributs
     private int pointsDeVie;
-    private float prevX;
-    private float prevY;
+
+    private Texture image;
+    private Texture deadImage; // Texture de l'explorateur lorsqu'il est vaincu
+
     private int tresorsRecoltes=0; //  nombre de trésors collectés
 
     private int degats;
@@ -24,9 +26,7 @@ public class Joueur {
     private float speed;
     private List<Node> path;
     private PlayerState state;
-    private Monstre[] monstres;
-    private  Monstre monstre;
-    private boolean combat;
+
 
     // Constructeur
     public Joueur(int pointsDeVie, int degats, double rangeDetection, float x, float y, float speed) {
@@ -38,12 +38,17 @@ public class Joueur {
         this.speed = speed;
         this.path = new ArrayList<>();
         this.state = PlayerState.FINDING_TREASURE;
+        image = new Texture("Images/crab_rest.png");
+        deadImage = new Texture("Images/crab_marche_mort.png"); // Utilisation de la texture "crab_marche_mort.png" pour l'état de défaite
+
+
     }
 
     // Méthode pour attaquer un monstre
     public void attaquer(Monstre monstre) {
         monstre.recevoirDegats(this.degats);
     }
+
 
     // Méthode pour recevoir des dégâts
     public void recevoirDegats(int degats) {
@@ -116,7 +121,6 @@ public class Joueur {
 
     public void detecterProximite(Monstre monstre) {
             double distance = Math.abs(this.getX() - monstre.getPositionX())+Math.abs(this.getY() - monstre.getPositionY());
-            System.out.println(distance);
             if (distance <=32) {
                 this.setState(PlayerState.COMBATTING);
             }
@@ -124,7 +128,7 @@ public class Joueur {
 
 
     // Fonction pour lancer le combat entre le joueur et un monstre
-    public boolean lancerCombat(Monstre monstre) {
+    public int lancerCombat(Monstre monstre) {
         // Tant que le joueur et le monstre sont en vie
         if (this.getPointsDeVie() > 0 && monstre.getPointsDeVie() > 0) {
             // Calculer les dégâts infligés par le joueur au monstre
@@ -133,30 +137,30 @@ public class Joueur {
             if (degatsDuJoueur > 0) {
                 // Infliger des dégâts au monstre
                 monstre.recevoirDegats(degatsDuJoueur);
+                System.out.println("degat M "+monstre.getPointsDeVie());
             }
 
             // Vérifier si le monstre est toujours en vie après l'attaque du joueur
             if (monstre.getPointsDeVie() > 0) {
                 // Calculer les dégâts infligés par le monstre au joueur
-                int degatsDuMonstre = monstre.getDegats() ; // À CHANGERRR!!!!
-                System.out.println("les degats du monstre "+degatsDuMonstre);
+                int degatsDuMonstre = monstre.getDegats();
                 // Vérifier si les dégâts sont positifs
                 if (degatsDuMonstre > 0) {
                     // Infliger des dégâts au joueur
                     this.recevoirDegats(degatsDuMonstre);
+                    System.out.println("degat J "+this.getPointsDeVie());
+
                 }
+
             }
         }
-        System.out.println("ma vie "+this.getPointsDeVie()+ " la vie du monstre "+monstre.getPointsDeVie());
-        if(this.getPointsDeVie()<0){
-            //faire disparaitre le joueur
-        }
-        if(monstre.getPointsDeVie()<0){
-            //faire disparaitre
+
+        if(monstre.getPointsDeVie() < 0){
+            System.out.println("tes mort monstre");
         }
 
-        //true si Le joueur a gagné
-        return this.getPointsDeVie() > 0;
+        // true si Le joueur a gagné
+        return this.getPointsDeVie() ;
     }
 
 
@@ -181,44 +185,17 @@ public class Joueur {
         }
     }
 
-    //check si il a eu une collision avec un mur
-    public boolean isCollisionHD(TiledMapTileLayer obstacleLayer, float x, float y) {
-        int cellX = (int) ((x + 15) / obstacleLayer.getTileWidth());
-        int cellY = (int) ((y + 15) / obstacleLayer.getTileHeight());
 
-        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
-        return cell != null && cell.getTile() != null;
+    public Texture getImage(){
+        return this.image;
+    }
+    // Méthode pour définir la texture de l'explorateur
+    public void setImage(Texture texture) {
+        this.image = texture;
     }
 
-    public boolean isCollisionHG(TiledMapTileLayer obstacleLayer, float x, float y) {
-        int cellX = (int) ((x) / obstacleLayer.getTileWidth());
-        int cellY = (int) ((y + 15) / obstacleLayer.getTileHeight());
-
-        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
-        return cell != null && cell.getTile() != null;
-    }
-
-    public boolean isCollisionBD(TiledMapTileLayer obstacleLayer, float x, float y) {
-        int cellX = (int) ((x + 15) / obstacleLayer.getTileWidth());
-        int cellY = (int) ((y) / obstacleLayer.getTileHeight());
-
-        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
-        return cell != null && cell.getTile() != null;
-    }
-
-    public boolean isCollisionBG(TiledMapTileLayer obstacleLayer, float x, float y) {
-        int cellX = (int) ((x) / obstacleLayer.getTileWidth());
-        int cellY = (int) ((y) / obstacleLayer.getTileHeight());
-
-        TiledMapTileLayer.Cell cell = obstacleLayer.getCell(cellX, cellY);
-        return cell != null && cell.getTile() != null;
-    }
-
-
-
-
-    public boolean isCollision(TiledMapTileLayer obstacleLayer) {
-        return isCollisionHG(obstacleLayer, x + speed, y + speed) || isCollisionHD(obstacleLayer, x + speed, y + speed) || isCollisionBD(obstacleLayer, x + speed, y + speed) || isCollisionBG(obstacleLayer, x + speed, y + speed);
+    public Texture getDeadTexture() {
+        return this.deadImage;
     }
 
     public void setPath(List<Node> path) {
@@ -236,6 +213,8 @@ public class Joueur {
     public void setState(PlayerState state) {
         this.state = state;
     }
+
+
 
 }
 

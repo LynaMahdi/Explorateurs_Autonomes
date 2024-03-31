@@ -1,0 +1,38 @@
+{
+"com.badlogic.gdx.graphics.g2d.BitmapFont": {
+	"OpenSans-Regular": {
+		"file": "OpenSans-Regular.fnt",
+		"scaledSize": -1,
+		"markupEnabled": false,
+		"flip": false
+	}
+},
+"com.badlogic.gdx.graphics.Color": {
+	"RGBA_12_0_0_255": {
+		"r": 0.050561797,
+		"g": 0,
+		"b": 0,
+		"a": 1
+	},
+	"RGBA_255_252_252_255": {
+		"r": 1,
+		"g": 0.9882353,
+		"b": 0.9882353,
+		"a": 1
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable": {
+	"k": {
+		"name": "white-pixel",
+		"color": "RGBA_255_252_252_255"
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle": {
+	"default": {
+		"font": "OpenSans-Regular",
+		"fontColor": "RGBA_12_0_0_255",
+		"background": "k",
+		"messageFontColor": "RGBA_255_252_252_255"
+	}
+}
+}

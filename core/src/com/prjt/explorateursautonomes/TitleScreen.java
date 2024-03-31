@@ -12,11 +12,13 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.prjt.explorateursautonomes.bouttons.StartButton;
 import com.prjt.explorateursautonomes.bouttons.StartButtonController;
+import com.prjt.explorateursautonomes.world.TextHandler;
 
 
 public class TitleScreen implements Screen {
@@ -40,17 +42,49 @@ public class TitleScreen implements Screen {
     Stage stage;
     BitmapFont bitmapFont;
     Skin skin;
+    TextHandler textInputHandler;
 
     @Override
     public void show() {
         batch = new SpriteBatch();
-        img = new Texture("entrance.png");
-        img2 = new Texture("boutton.png");
+        img = new Texture("Images/entrance.png");
+        img2 = new Texture("buttons/boutton.png");
 
+
+        stage = new Stage();
+        Gdx.input.setInputProcessor(stage);
+        // Load skin
+        skin = new Skin(Gdx.files.internal("textField.json"));
+
+        // Create text field
+        TextField.TextFieldStyle textFieldStyle = skin.get("default", TextField.TextFieldStyle.class);
+        textField = new TextField("", textFieldStyle);
+        textField.setMessageText("Enter a number");
+
+        // Create table for layout
+        Table table = new Table();
+        table.bottom().left();
+        table.setFillParent(true);
+        table.pad(10);
+
+        // Set the width of the text field
+        float textFieldWidth = 100; // Set the desired width here
+
+        // Add text field to table
+        table.add(textField).width(textFieldWidth).height(30);
+
+
+        // Add table to stage
+        table.setFillParent(false);
+
+
+
+        stage.addActor(table);
 
 
         bitmapFont = new BitmapFont(Gdx.files.internal("font.fnt"));
 
+        //initilisser le multiplexer et le boutton demarrer
         multiplexer = new MyMultiplexer();
         startButtonController = new StartButtonController();
 
@@ -68,31 +102,26 @@ public class TitleScreen implements Screen {
 
         // Positionner le bouton "Start" en bas de la fenêtre
         button = new StartButton(img2);
-      //  button.setSize(200, 50);
         button.setPosition(445, 415);
-        // Dessiner le texte et le bouton
-        batch.begin();
-        bitmapFont.draw(batch, "EXPLORATEUR AUTONOMES", (float) Gdx.graphics.getWidth() /2 - button.getWidth()/2, (float) Gdx.graphics.getHeight() /20);
-        backGround.draw(batch); // Dessiner l'image
-        button.draw(batch); // Dessiner le bouton
-        batch.end();
+
     }
 
 
 
-
-
     @Override
-    public void render(float v) {
+    public void render(float delta) {
         ScreenUtils.clear(0.6f, 0.3f, 0.1f, 1f);
 
         batch.begin();
         viewport.apply();
 
         backGround.draw(batch);
+        stage.act(Gdx.graphics.getDeltaTime());
+
+        stage.draw();
 
 
-        bitmapFont.draw(batch, "EXPLORATEUR INTELLIGENTS", 100,450); // Dessiner le texte
+        bitmapFont.draw(batch, "EXPLORATEURS       INTELLIGENTS", 100,450); // Dessiner le texte
         button.draw(batch);
 
 
@@ -100,8 +129,6 @@ public class TitleScreen implements Screen {
 
         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && button.isWithin(Gdx.input.getX(),Gdx.input.getY())){
             ((Game) Gdx.app.getApplicationListener()).setScreen( new Explorateurs());
-
-
         }
     }
 

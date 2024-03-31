@@ -8,7 +8,7 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.useVsync(false);
-		config.setWindowIcon("letter-e.png");
+		config.setWindowIcon("Images/letter-e.png");
 		config.setTitle("Explorateurs intelligents");
 		new Lwjgl3Application(MyGame.getInstance(), config);
 	}

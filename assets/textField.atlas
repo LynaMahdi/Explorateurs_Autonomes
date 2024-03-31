@@ -1,0 +1,20 @@
+
+textField.png
+size: 512, 512
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+white-pixel
+  rotate: false
+  xy: 1, 440
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+OpenSans-Regular
+  rotate: false
+  xy: 1, 443
+  size: 506, 62
+  orig: 506, 62
+  offset: 0, 0
+  index: -1

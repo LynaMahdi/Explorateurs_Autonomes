@@ -2,12 +2,13 @@ package com.prjt.explorateursautonomes.tresor;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.prjt.explorateursautonomes.monstre.Monstre;
 
 import java.util.Random;
 
-public class TreasureManager {
+public class TreasureMonsterManager {
 
-    public static Tresor generateTreasure(TiledMap tiledMap, Tresor[] tresors, int i) {
+    public static Tresor generateTreasureMonster(TiledMap tiledMap, Tresor[] tresors, Monstre[] monstres, int i) {
         Random random = new Random();
 
         // Tableau des couches d'obstacles
@@ -36,24 +37,28 @@ public class TreasureManager {
             // Convertir en multiples de 16
             posX = (int) (Math.round(posX / 16.0f) * 16.0f);
             posY = (int) (Math.round(posY / 16.0f) * 16.0f);
-        } while (!Pos(posX, posY, obstacleLayers)); // Vérifier si la position est valide(pas dans un obstacle)
+        } while (!isPositionValid(posX, posY, obstacleLayers)); // Vérifier si la position est valide(pas dans un obstacle)
 
         // Créer le trésor pour le labyrinthe actuel
         tresors[i] = new Tresor("addon", posX, posY, i);
+
+        // Générer le monstre à côté du trésor
+        int monsterX = posX + 16; // Peut être ajusté selon les besoins
+        int monsterY = posY + 16; // Peut être ajusté selon les besoins
+        monstres[i] = new Monstre(monsterX, monsterY, 50, 10, 5, 8, 5);
+
         return tresors[i];
     }
 
-    private static boolean Pos(int x, int y, TiledMapTileLayer[] obstacleLayers) {
+
+    private static boolean isPositionValid(int x, int y, TiledMapTileLayer[] obstacleLayers) {
         for (TiledMapTileLayer obstacleLayer : obstacleLayers) {
             // Check if the position is not on an obstacle in any of the layers
             TiledMapTileLayer.Cell cell = obstacleLayer.getCell(x / obstacleLayer.getTileWidth(), y / obstacleLayer.getTileHeight());
             if (cell != null && cell.getTile() != null) {
                 return false; // obstacle trouvé
             }
-
         }
-
         return true; // pas d'obstacle
     }
-
 }

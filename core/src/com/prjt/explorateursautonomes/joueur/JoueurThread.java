@@ -6,7 +6,7 @@ import com.prjt.explorateursautonomes.algo.Graph;
 import com.prjt.explorateursautonomes.algo.Node;
 import com.prjt.explorateursautonomes.algo.Pathfinding;
 import com.prjt.explorateursautonomes.monstre.Monstre;
-import com.prjt.explorateursautonomes.tresor.TreasureManager;
+import com.prjt.explorateursautonomes.tresor.TreasureMonsterManager;
 import com.prjt.explorateursautonomes.tresor.Tresor;
 
 import java.util.List;
@@ -22,8 +22,15 @@ public class JoueurThread extends Thread {
     private final Tresor[] tresors;
     private final Monstre[] monstres;
     private final Explorateurs explorateurs;
-    private final int spawnX = 496;
-    private final int spawnY = 496;
+
+    private final int[][] spawnPoints = {
+
+            {464, 464},
+            {496, 496},
+            {496, 464},
+            {464, 496}
+    };
+
 
     public JoueurThread(int id, Explorateurs explorateurs, Tresor[] tresors, TiledMap world, Tresor tresor, Joueur joueur, Monstre[] monstres, Monstre monstre) {
         this.joueur = joueur;
@@ -35,10 +42,12 @@ public class JoueurThread extends Thread {
         this.monstre = monstre;
         this.id = id;
         this.explorateurs = explorateurs;
+
     }
 
 
     public void run() {
+
 
         List<Node> path = Pathfinding.AStar(graph, new Node((int) joueur.getX(), (int) joueur.getY()), new Node(tresor.getPositionX(), tresor.getPositionY()));
         joueur.setPath(path);
@@ -62,18 +71,22 @@ public class JoueurThread extends Thread {
     }
 
     private void tick() {
+        int[] spawnPoint = spawnPoints[id]; // L'identifiant commence à partir de 0
+        int spawnX = spawnPoint[0];
+        int spawnY = spawnPoint[1];
 
         if (joueur.getState() == PlayerState.FINDING_TREASURE) {
 
             for (Monstre m : explorateurs.getMonstre()) {
                 joueur.detecterProximite(m);
                 if (joueur.getState() == PlayerState.COMBATTING) {
-                    System.out.println("Le joueur " + id + " a lancé un combat avec un monstre !");
-                    if(joueur.lancerCombat(m)){
-                        System.out.println("je contine");
+                    if(joueur.lancerCombat(m)>0){
                         joueur.setState(PlayerState.FINDING_TREASURE);
+
                     }else{
-                        System.out.println("jpp");
+                        joueur.setImage(joueur.getDeadTexture()); // Changer la texture du joueur ->mort
+                        joueur.setState(PlayerState.DEAD);
+
                     }
                 }
             }
@@ -97,7 +110,7 @@ public class JoueurThread extends Thread {
 
             if ((int) joueur.getX() == spawnX && (int) joueur.getY() == spawnY) {
                 synchronized (explorateurs.getTresor()) {
-                    this.tresor = TreasureManager.generateTreasure(world, tresors, id);
+                    this.tresor = TreasureMonsterManager.generateTreasureMonster(world, tresors,monstres, id);
                     List<Node> treasurePath = Pathfinding.AStar(graph, new Node((int) joueur.getX(), (int) joueur.getY()), new Node(tresor.getPositionX(), tresor.getPositionY()));
                     joueur.setPath(treasurePath);
                     joueur.setState(PlayerState.FINDING_TREASURE);

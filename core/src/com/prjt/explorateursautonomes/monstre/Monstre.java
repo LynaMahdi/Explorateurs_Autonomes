@@ -12,10 +12,12 @@ public class Monstre {
     private int pointsDeVie;
     private int degats;
     private int armor;
+
     private double rangeDetection;
     private double vitesseDeplacement;
     private int posX;
     private int posY;
+
 
     // Constructeur
     public Monstre(int posX, int posY, int pointsDeVie, int degats, int armor, double rangeDetection, double vitesseDeplacement) {
@@ -27,8 +29,9 @@ public class Monstre {
         this.vitesseDeplacement = vitesseDeplacement;
         this.posX=posX;
         this.posY=posY;
-    }
 
+
+    }
 
 
     // Méthode pour donner des dégâts à une cible
@@ -38,15 +41,13 @@ public class Monstre {
 
     // Méthode pour recevoir des dégâts
     public void recevoirDegats(int degats) {
-        int degatsSubis = degats - this.armor; // Calcul des dégâts subis en tenant compte de l'armure
-        if (degatsSubis > 0) {
-            this.pointsDeVie -= degatsSubis;
-            if (this.pointsDeVie <= 0) {
-                System.out.println("Le monstre a été vaincu!");
-                // Ici, vous pouvez ajouter des actions spécifiques lorsque le monstre est vaincu
-            }
+        this.pointsDeVie-=degats; // Calcul des dégâts subis en tenant compte de l'armure
+        if (this.pointsDeVie <= 0) {
+            System.out.println("Le monstre a été vaincu!");
         }
     }
+
+
 
     // Getters et setters pour tous les attributs
     public List<Node> getPathAddon() {
