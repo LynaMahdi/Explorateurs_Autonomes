@@ -49,6 +49,8 @@ public class Explorateurs implements Screen {
 		camera.setToOrtho(false, 950, 950);
 
 
+		Bomb = new Texture("Images/explosion_donut.png");
+
 		// Initialisez la texture pour le joueur
 
 		imgMonstre=new Texture("Images/squelette_rest.png");
