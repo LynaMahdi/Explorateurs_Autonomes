@@ -74,6 +74,7 @@ public class JoueurThread extends Thread {
         int[] spawnPoint = spawnPoints[id]; // L'identifiant commence à partir de 0
         int spawnX = spawnPoint[0];
         int spawnY = spawnPoint[1];
+        int numJ=id+1;
 
         if (joueur.getState() == PlayerState.FINDING_TREASURE) {
 
@@ -96,7 +97,8 @@ public class JoueurThread extends Thread {
             }
 
             if ((int) joueur.getX() == tresor.getPositionX() && (int) joueur.getY() == tresor.getPositionY()) {
-                System.out.println("Le joueur " + id + " a trouvé le trésor !");
+                System.out.println("Le joueur " + id + " a    trouve   le   tresor !");
+                joueur.setPlayerMessage( "Joueur " + numJ+ " a    trouve   le   tresor !");
                 joueur.incrementerTresorsRecoltes();//incrementer le nombre de tresrs trouvé par le joueur
                 List<Node> spawnPath = Pathfinding.AStar(graph, new Node((int) joueur.getX(), (int) joueur.getY()), new Node(spawnX, spawnY));
                 joueur.setPath(spawnPath);

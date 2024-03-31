@@ -100,7 +100,7 @@ public class TitleScreen implements Screen {
         camera.update();
 
 
-        // Positionner le bouton "Start" en bas de la fenêtre
+        // Positionner le bouton Demarrer en haut de la fenêtre
         button = new StartButton(img2);
         button.setPosition(445, 415);
 
@@ -128,7 +128,7 @@ public class TitleScreen implements Screen {
         batch.end();
 
         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && button.isWithin(Gdx.input.getX(),Gdx.input.getY())){
-            ((Game) Gdx.app.getApplicationListener()).setScreen( new Explorateurs());
+            ((Game) Gdx.app.getApplicationListener()).setScreen( new SecondScreen());
         }
     }
 

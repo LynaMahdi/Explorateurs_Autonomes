@@ -18,6 +18,7 @@ public class Joueur {
     private Texture deadImage; // Texture de l'explorateur lorsqu'il est vaincu
 
     private int tresorsRecoltes=0; //  nombre de trésors collectés
+    private String playerMessage=""; // Champ pour stocker le message du joueur
 
     private int degats;
     private double rangeDetection;
@@ -67,6 +68,13 @@ public class Joueur {
     // Méthode pour incrémenter le nombre de trésors collectés
     public void incrementerTresorsRecoltes() {
         tresorsRecoltes++;
+    }
+    public void setPlayerMessage(String playerMessage) {
+        this.playerMessage = playerMessage;
+    }
+
+    public String getPlayerMessage(){
+        return this.playerMessage;
     }
 
     // Getters et setters
