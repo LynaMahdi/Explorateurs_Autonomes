@@ -100,12 +100,26 @@ public class JoueurThreadSafe extends Thread {
             }
 
             if ((int) joueur.getX() == tresor.getPositionX() && (int) joueur.getY() == tresor.getPositionY()) {
-                System.out.println("Le joueur " + id + " a    trouve   le   tresor !");
-                joueur.setPlayerMessage( "Joueur " + numJ+ " a    trouve   le   tresor !");
+                System.out.println("Le joueur " + id + " a trouve le tresor !");
+                joueur.setPlayerMessage( "Joueur " + numJ+ " a trouve le tresor !");
                 joueur.incrementerTresorsRecoltes();//incrementer le nombre de tresrs trouvé par le joueur
                 List<Node> spawnPath = Pathfinding.AStar(graph, new Node((int) joueur.getX(), (int) joueur.getY()), new Node(spawnX, spawnY));
                 joueur.setPath(spawnPath);
+
                 joueur.setState(PlayerState.GOING_TO_SPAWN);
+                for (Joueur otherPlayer : explorateurs.getListOfPlayers()) {
+                    if (otherPlayer == this.joueur) {
+                        continue;
+                    }
+                    List<Node> spawnPathotherPlayer = Pathfinding.AStar(graph, new Node((int) otherPlayer.getX(), (int) otherPlayer.getY()), new Node(spawnX, spawnY));
+                    otherPlayer.setPath(spawnPathotherPlayer);
+                    otherPlayer.setState(PlayerState.GOING_TO_SPAWN);
+                    //otherPlayer.setState(PlayerState.FINDING_TREASURE);
+                    //if (otherPlayer.getTresorCible().equals(this.tresor)) {
+                    //  System.out.println("Changer");
+                    //}
+                }
+
                 tresor.setPositionY(spawnY);
                 tresor.setPositionX(spawnX);
             }
@@ -117,6 +131,17 @@ public class JoueurThreadSafe extends Thread {
                 synchronized (explorateurs.getTresor()) {
                     this.tresor = TreasureMonsterManager.generateTreasureMonster(world, tresors,monstres, id);
 
+                    for (Joueur otherPlayer : explorateurs.getListOfPlayers()) {
+                        if (otherPlayer == this.joueur) {
+                            continue;
+                        }
+                        List<Node> treasurePath = Pathfinding.AStar(graph, new Node((int) otherPlayer.getX(), (int) otherPlayer.getY()), new Node(tresor.getPositionX(), tresor.getPositionY()));
+                        otherPlayer.setPath(treasurePath);
+                        //otherPlayer.setState(PlayerState.FINDING_TREASURE);
+                        //if (otherPlayer.getTresorCible().equals(this.tresor)) {
+                          //  System.out.println("Changer");
+                        //}
+                    }
 
                     List<Node> treasurePath = Pathfinding.AStar(graph, new Node((int) joueur.getX(), (int) joueur.getY()), new Node(tresor.getPositionX(), tresor.getPositionY()));
                     joueur.setPath(treasurePath);

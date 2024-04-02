@@ -47,6 +47,10 @@ public class Explorateurs implements Screen {
 		this.numberOfPlayers = numberOfPlayers;
 	}
 
+	public ArrayList<Joueur> getListOfPlayers() {
+		return listOfPlayers;
+	}
+
 	@Override
 	public void show() {
 		batch = new SpriteBatch();

@@ -50,6 +50,9 @@ public class ExplorateursSafe implements Screen {
         this.numberOfPlayers = numberOfPlayers;
     }
 
+    public ArrayList<Joueur> getListOfPlayers() {
+        return listOfPlayers;
+    }
 
     public int getIndex() {
         return index;

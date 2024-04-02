@@ -222,7 +222,5 @@ public class Joueur {
         this.state = state;
     }
 
-
-
 }
 
