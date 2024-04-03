@@ -192,7 +192,24 @@ public class Explorateurs implements Screen {
 		}
 		return true; // Tous les joueurs sont morts
 	}
+	// Méthode pour calculer le nombre total de trésors collectés par tous les joueurs
+	public int getTotalTresorsCollected() {
+		int total = 0;
+		for (Joueur joueur : listOfPlayers) {
+			total += joueur.getTresorsRecoltes();
+		}
+		return total;
+	}
 
+	// Méthode pour obtenir les statistiques individuelles de chaque joueur
+	public String getPlayerStatistics() {
+		StringBuilder statistics = new StringBuilder();
+		for (int i = 0; i < listOfPlayers.size(); i++) {
+			Joueur joueur = listOfPlayers.get(i);
+			statistics.append("Le    Joueur ").append(i + 1).append("     a    recolte    ").append(joueur.getTresorsRecoltes()).append("    tresors \n");
+		}
+		return statistics.toString();
+	}
 	@Override
 	public void render(float delta) {
 
@@ -223,7 +240,8 @@ public class Explorateurs implements Screen {
 			batch.draw(joueur.getImage(), joueur.getX(), joueur.getY());
 			bitmapFont.draw(batch, joueur.getPlayerMessage(), 100, 920-i*32);
 			if (joueur.getPointsDeVie() <= 10) {
-				bitmapFont.draw(batch, "Alerte !  le   joueur   " + i + 1 + "  sante    faible !", 490, 920);
+				int nbJ=i+1;
+				bitmapFont.draw(batch, "Alerte !  le   joueur   " + nbJ + "  sante    faible !", 490, 920);
 				batch.draw(Bomb, joueur.getX() + 16, joueur.getY() + 16);
 			}
 			bitmapFont.draw(batch, "*" + joueur.getTresorsRecoltes(), joueur.getX(), joueur.getY());
@@ -244,8 +262,16 @@ public class Explorateurs implements Screen {
 		}
 		batch.end();
 
+		// Calcul du nombre total de trésors collectés par tous les joueurs
+		int totalTresors = getTotalTresorsCollected();
+		System.out.println("Total des trésors collectés : " + totalTresors);
+
+		// Affichage des statistiques individuelles de chaque joueur
+		String playerStats = getPlayerStatistics();
+		System.out.println("Statistiques des joueurs :\n" + playerStats);
+
 		if (allPlayersDead()) {
-			((Game) Gdx.app.getApplicationListener()).setScreen(new TitleScreen());
+			((Game) Gdx.app.getApplicationListener()).setScreen(new StatScreen(getTotalTresorsCollected(), getPlayerStatistics()));
 			return; // Arrêter le rendu car nous avons changé d'écran
 		}
 
